@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "snobal-box"
+version = "0.2.0.dev0"
+description = "Plug-and-play point snobal: run the snobal snow energy and mass balance model from a YAML config, with swappable precipitation phase and density schemes."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{name = "McKenzie Skiles"}]
+dependencies = ["numpy", "pandas>=1.5", "matplotlib", "pyyaml"]
+
+[project.optional-dependencies]
+bmi = ["bmipy"]
+test = ["pytest"]
+
+[project.scripts]
+snobal-box = "snobal_box.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["snobal_box*"]
+
+[tool.setuptools.package-data]
+snobal_box = ["templates/*"]

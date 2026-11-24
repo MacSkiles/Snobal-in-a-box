@@ -1,0 +1,30 @@
+# Atwater Study Plot, UT. Water year 2022, HRRR forcing extracted at the plot.
+# Timestamped CSV, so no start time to assert. Times in the file are UTC;
+# output is reported in local standard time.
+name: Atwater WY2022 HRRR
+
+site:
+  elevation_ft: 8765
+  heights: {z_u: 5.0, z_t: 5.0, z_0: 0.003, z_g: 0.15}
+  initial_snow: {depth_m: 0.0}
+
+forcing:
+  format: csv
+  file: ../data/atwater_hrrr/jordan_bilinear_forcing_40.5915_-111.6378_nearest_wy2022.csv
+  columns: hrrr_extract
+  timezone: UTC                       # times in the file
+  output_timezone: Etc/GMT+7          # report in MST, like the in situ run
+  window: {start: '2021-10-01 00:00', end: '2022-06-30 23:00'}   # in output_timezone; matches in situ
+
+precip:
+  phase: file
+  density: file
+
+scenarios:
+  precip x1.5:           {precip_scale: 1.5}
+  phase linear -1..3C:   {precip: {phase: linear, phase_params: {T_snow: -1.0, T_rain: 3.0}, density: hedstrom_pomeroy}}
+  phase dai2008:         {precip: {phase: dai2008, density: hedstrom_pomeroy}}
+  phase on dewpoint 0C:  {precip: {phase: threshold, phase_params: {T_threshold: 0.0}, phase_temperature: dewpoint, density: hedstrom_pomeroy}}
+
+output:
+  dir: ../output

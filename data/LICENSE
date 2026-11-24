@@ -1,0 +1,12 @@
+The forcing data in this folder are licensed under the Creative Commons
+Attribution 4.0 International License (CC-BY-4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+atwater/       Atwater Study Plot, UT: in situ station forcing, WY2022-WY2026,
+               snobal IPW format. WY2024 precipitation: use the _v2 file
+               (the original precipitation column is 24 h late).
+atwater_hrrr/  HRRR forcing extracted at the Atwater Study Plot
+               (40.5915 N, 111.6378 W), WY2021-WY2024, hourly, UTC.
+
+Please cite: Skiles, M. (2026). snobal-box forcing data. DOI to be added
+when the data are archived on Zenodo.

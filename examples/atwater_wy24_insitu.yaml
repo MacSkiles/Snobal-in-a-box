@@ -1,0 +1,38 @@
+# Atwater Study Plot, UT. Water year 2024, in situ station forcing.
+#
+# The .input files have no timestamps. `water_year: 2024` asserts the first
+# record is 2021-10-01 00:00 in `timezone`; `align_with` checks that claim
+# against HRRR air temperature and warns if they disagree by 2 h or more.
+name: Atwater WY2024 in situ
+
+site:
+  elevation_ft: 8765
+  height_file: ../data/atwater/Atwater_WY24_inheight.properties.input
+  snow_file: ../data/atwater/Atwater_WY24_snow.properties.input
+
+forcing:
+  format: ipw
+  data_file: ../data/atwater/Atwater_WY24_snobal_Data.input
+  precip_file: ../data/atwater/Atwater_WY24_snobal_PrecipFile_v2.input   # m_pp moved 24 h earlier; the original is a day late
+  water_year: 2024
+  timezone: Etc/GMT+7          # MST all year (no daylight saving)
+  align_with:
+    file: ../data/atwater_hrrr/jordan_bilinear_forcing_40.5915_-111.6378_nearest_wy2024.csv
+    columns: hrrr_extract
+    timezone: UTC
+
+precip:
+  # 'file' would use the split already in the precip file, but a file
+  # split cannot respond to warming. The lookup table was reverse-engineered
+  # from these files, so baseline and scenarios share one scheme.
+  phase: table
+  density: table
+  phase_temperature: T_pp
+
+scenarios:
+  +2C:                {T_offset: 2.0}
+  +2C energy only:    {T_offset: 2.0, rebuild_phase: false}
+  +2C phase only:     {threshold_shift: -2.0}
+
+output:
+  dir: ../output

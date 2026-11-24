@@ -1,0 +1,73 @@
+# snobal-box run config. Fill in the fields marked REQUIRED, then:
+#     snobal-box check my_site.yaml     # reads and QCs, no model run
+#     snobal-box run my_site.yaml
+# Paths are relative to this file.
+
+name: My site WY2024                      # REQUIRED, used for the output folder
+
+site:
+  elevation_m: 3000                       # REQUIRED (or elevation_ft)
+  # Instrument heights above the ground, m. z_u wind, z_t air temperature,
+  # z_0 snow surface roughness, z_g depth of the soil temperature.
+  heights: {z_u: 5.0, z_t: 5.0, z_0: 0.003, z_g: 0.15}
+  # Snow on the ground when the record starts. Leave at 0 only if the record
+  # starts before the first snowfall: a mid-winter start from bare ground runs
+  # fine and is badly wrong.
+  initial_snow: {depth_m: 0.0, density: 300, temp_C: -4.0}
+
+forcing:
+  format: csv
+  file: forcing_template.csv              # REQUIRED
+  # One row per hour. Columns (snobal's own names, see `columns` to rename):
+  #   time          timestamp, e.g. 2023-10-01 00:00
+  #   S_n           NET solar radiation, W/m2 (albedo already applied)
+  #   I_lw          incoming longwave, W/m2
+  #   T_a           air temperature, C
+  #   e_a           vapor pressure, Pa
+  #   u             wind speed, m/s (keep above ~0.5)
+  #   T_g           soil temperature, C
+  #   m_pp          precipitation, mm per hour
+  #   percent_snow  OPTIONAL fraction of m_pp falling as snow, 0-1
+  #   rho_snow      OPTIONAL new snow density, kg/m3
+  #   T_pp          OPTIONAL precipitation temperature, C (default: T_a)
+  # If your column names differ, map them:
+  # columns: {S_n: my_net_solar, T_a: my_air_temp, ...}
+  columns: snobal
+  time_column: time
+  timezone: UTC                           # zone of the timestamps in the file
+  output_timezone: null                   # e.g. Etc/GMT+7 for MST
+  window: null                            # {start: ..., end: ...} to crop
+
+precip:
+  scale: 1.0
+  # How precipitation is split into rain and snow, and how dense new snow is.
+  # 'file' uses percent_snow / rho_snow from the forcing (needs those columns);
+  # 'auto' is 'file' when the columns are there and 'table' when not.
+  phase: table          # auto | file | table | threshold | linear | dai2008
+  phase_params: {}      # threshold: {T_threshold: 0}; linear: {T_snow: -1, T_rain: 3}
+  phase_temperature: T_pp   # T_pp | T_a | dewpoint
+  density: table        # auto | file | table | constant | hedstrom_pomeroy
+  density_params: {}    # constant: {rho: 100}
+
+# Each scenario is the baseline plus changes. Knobs:
+#   T_offset (C), solar_scale, lw_offset (W/m2), wind_scale, vapor_scale,
+#   precip_scale, rho_snow_scale, threshold_shift (C, + = more snow),
+#   rebuild_phase (false = warm the air but keep the baseline rain/snow split),
+#   precip: {...} to swap any precip setting for this scenario only.
+scenarios:
+  +2C: {T_offset: 2.0}
+  +2C energy only: {T_offset: 2.0, rebuild_phase: false}
+
+# Optional. Model depth/SWE are sampled at the observation times.
+observations: null
+#  file: my_obs.csv
+#  time_column: time
+#  depth_column: depth_cm
+#  depth_units: cm          # m | cm | mm | in
+#  swe_column: swe_mm
+#  swe_units: mm
+
+output:
+  dir: output
+  figures: true
+  write_forcing: false      # true writes each scenario's forcing as CSV
