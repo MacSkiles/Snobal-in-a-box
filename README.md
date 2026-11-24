@@ -2,68 +2,71 @@
 
 [![tests](https://github.com/MacSkiles/snobal-in-a-box/actions/workflows/tests.yml/badge.svg)](https://github.com/MacSkiles/snobal-in-a-box/actions/workflows/tests.yml) [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MacSkiles/snobal-in-a-box/blob/main/notebooks/snobal_box_quickstart.ipynb)
 
-Run the **snobal** point snow energy and mass balance model with your own
-forcing or the bundled examples, from one YAML file. No compiled code, no
-gridded setup: `pip install`, write a config, run.
+snobal-box runs the snobal point snow energy and mass balance model
+(Marks et al., 1999) from a single YAML configuration file, using either the
+bundled example forcings or user-supplied hourly data. It is pure Python and
+requires no compiled code or gridded setup.
 
 ```
 pip install git+https://github.com/MacSkiles/snobal-in-a-box
-snobal-box init my_site          # template config + template forcing CSV
-snobal-box check my_site/my_site.yaml   # read and QC the forcing, no run
-snobal-box run   my_site/my_site.yaml   # baseline + scenarios, CSV + figures
+snobal-box init my_site                 # template configuration and forcing CSV
+snobal-box check my_site/my_site.yaml   # read and quality-check the forcing
+snobal-box run   my_site/my_site.yaml   # run baseline and scenarios
 ```
 
-or in Python / a notebook:
+From Python:
 
 ```python
 import snobal_box as sb
-res = sb.run_config('examples/atwater_wy22_insitu.yaml')
+res = sb.run_config('examples/atwater_wy25_insitu.yaml')
 res.summary                 # one row per scenario
 res.outputs['baseline']     # hourly model output
 ```
 
-A Colab-ready notebook is in `notebooks/snobal_box_quickstart.ipynb`: run the
-example, or upload your own CSV and edit one cell.
+The notebook `notebooks/snobal_box_quickstart.ipynb` runs in Google Colab
+and covers both the bundled example and user-uploaded forcing.
 
-## What goes in
+## Inputs
 
-**Forcing**, hourly, in one of two formats:
+**Forcing** is hourly, in one of two formats:
 
-| format | what | start time |
+| Format | Description | Start time |
 |---|---|---|
-| `csv` | one file with a time column. The upload format. Column names are mapped by a preset (`snobal`, `hrrr_extract`) or a `columns:` dict | from the timestamps |
-| `ipw` | the classic snobal `.input` pair (data + precip files) | **you supply it**: `start`, `water_year`, or `start: auto` + `align_with` |
+| `csv` | A single file with a time column. Column names are mapped by a preset (`snobal`, `hrrr_extract`) or a `columns:` mapping. | Taken from the timestamps |
+| `ipw` | The snobal `.input` file pair (data and precipitation files). | Set in the configuration: `start`, `water_year`, or `start: auto` with `align_with` |
 
-Required variables: net solar `S_n`, incoming longwave `I_lw`, air
-temperature `T_a`, vapor pressure `e_a`, wind `u`, soil temperature `T_g`,
-precipitation `m_pp`. Optional: `percent_snow`, `rho_snow`, `T_pp`; if
-absent, the precipitation scheme makes them.
+Required variables are net solar radiation `S_n`, incoming longwave
+radiation `I_lw`, air temperature `T_a`, vapor pressure `e_a`, wind speed `u`,
+soil temperature `T_g` and precipitation mass `m_pp`. The variables
+`percent_snow`, `rho_snow` and `T_pp` are optional; when absent they are
+derived by the selected precipitation scheme.
 
-**Site**: elevation, instrument heights (`z_u`, `z_t`, `z_0`, `z_g`) and the
-snow on the ground at the start. All in the config; IPW `inheight` and
-`snow.properties` files are also accepted.
+**Site** parameters are elevation, measurement heights (`z_u`, `z_t`, `z_0`,
+`z_g`) and initial snow conditions. They are given in the configuration, or
+read from IPW `inheight` and `snow.properties` files.
 
-## Start times, made explicit
+## Start time
 
-`.input` files carry an hourly counter, not times, so the start is an
-assertion that nothing used to check. Now:
+IPW `.input` files contain an hourly counter rather than timestamps, so the
+start time must be specified:
 
-- `water_year: 2022` means 2021-10-01 00:00 in `timezone`.
-- `align_with: <timestamped CSV>` slides the record's air temperature along
-  the reference's (diurnal anomalies, hour resolution) and reports the best
-  start and its correlation. With an explicit start it warns at 2 h or more
-  of disagreement; with `start: auto` it uses the aligned start.
-- Every run writes `config_resolved.yaml` with the start actually used and the
-  alignment result.
+- `water_year: 2025` sets the first record to 2024-10-01 00:00 in `timezone`.
+- `align_with: <timestamped CSV>` cross-correlates the diurnal air temperature
+  anomalies of the record against a reference series and reports the
+  best-matching start hour and its correlation. With an explicit start, a
+  warning is issued if the two differ by 2 h or more; with `start: auto`, the
+  aligned start is used.
+- Each run writes `config_resolved.yaml`, recording the start time used and
+  the alignment result.
 
-Times are timezone-aware throughout. `timezone` is the zone of the input
-times; `output_timezone` is the zone of the output (e.g. HRRR in UTC,
+All times are timezone-aware. `timezone` is the zone of the input times and
+`output_timezone` the zone of the output (for example, HRRR forcing in UTC
 reported in MST as `Etc/GMT+7`).
 
-## Precipitation phase and new snow density, made swappable
+## Precipitation phase and new snow density
 
-snobal does not decide rain versus snow; it is told. The `precip:` block
-chooses who tells it:
+snobal requires the snow fraction and new snow density of precipitation as
+inputs. The `precip:` block selects how they are determined:
 
 ```yaml
 precip:
@@ -73,78 +76,71 @@ precip:
   phase_temperature: T_pp   # T_pp | T_a | dewpoint
   density: table            # auto | file | table | constant | hedstrom_pomeroy
   density_params: {}
-  threshold_shift: 0.0      # C, positive = boundary warmer = MORE snow
+  threshold_shift: 0.0      # degrees C; positive values increase the snow fraction
 ```
 
-`file` uses whatever the forcing already contains; `auto` (default) is `file`
-when the columns exist and `table` when they do not. `table` is the lookup
-table reverse-engineered from the Atwater precip files (it reproduces their
-snow fraction: 97% WY22, 94% WY24). Adding a scheme is one function and one
-dictionary entry in `snobal_box/precip.py`.
+`file` uses the values in the forcing. `auto` (the default) uses `file` when
+those columns are present and `table` otherwise. `table` is a temperature
+lookup table consistent with the Atwater precipitation files. Additional
+schemes can be registered in `snobal_box/precip.py`.
 
 ## Scenarios
 
-Each scenario is the baseline plus changes:
+Each scenario applies changes to the baseline forcing:
 
 ```yaml
 scenarios:
-  +2C:               {T_offset: 2.0}                         # warmer air AND more rain
-  +2C energy only:   {T_offset: 2.0, rebuild_phase: false}   # warmer air, same rain/snow split
-  +2C phase only:    {threshold_shift: -2.0}                 # same air, split as if 2 C warmer
+  +2C:               {T_offset: 2.0}                         # warming, with phase recomputed
+  +2C energy only:   {T_offset: 2.0, rebuild_phase: false}   # warming, baseline phase retained
+  +2C phase only:    {threshold_shift: -2.0}                 # phase as under +2 C, no warming
   dai2008 phase:     {precip: {phase: dai2008, density: hedstrom_pomeroy}}
-  HRRR +50%:         {precip_scale: 1.5}
+  precip +50%:       {precip_scale: 1.5}
 ```
 
-Knobs: `T_offset`, `solar_scale`, `lw_offset`, `wind_scale`, `vapor_scale`,
-`precip_scale`, `rho_snow_scale`, `threshold_shift`, `rebuild_phase`,
-`precip: {...}`.
+Available parameters: `T_offset`, `solar_scale`, `lw_offset`, `wind_scale`,
+`vapor_scale`, `precip_scale`, `rho_snow_scale`, `threshold_shift`,
+`rebuild_phase` and `precip`.
 
-## What comes out
+## Outputs
 
-Per run, in `output/<name>/`:
+Each run writes to `output/<name>/`:
 
 - `summary.csv`, one row per scenario: peak SWE and date, half-melt date,
-  melt-out date, depletion days and rate, peak depth, snowfall, rain on snow,
-  rain on bare ground, snow water input, sublimation, **mass closure
-  residual** (should be a few mm at most), snow fraction, neutral-stability
-  substitutions, depth as a fraction of the wind sensor height, and, with
-  observations, bias/RMSE/r and timing errors for depth and SWE.
+  melt-out date, depletion duration and rate, peak depth, snowfall, rain on
+  snow, rain on bare ground, snow water input, sublimation, mass balance
+  closure residual, snow fraction, number of neutral-stability substitutions,
+  and peak depth relative to wind measurement height. When observations are
+  supplied, bias, RMSE, correlation and timing errors for depth and SWE.
 - `output_<scenario>.csv`, hourly model state and fluxes.
-- `swe_depth.png`, `water.png`, `energy.png`.
-- `config_resolved.yaml`, everything needed to reproduce the run.
+- `swe_depth.png`, `water.png` and `energy.png`.
+- `config_resolved.yaml`, the full configuration used for the run.
 
-`--combined all.csv` stacks the summaries of several configs.
+`snobal-box run --combined all.csv` combines the summaries of several
+configurations.
 
 ## Examples
 
-`examples/` runs out of the box against `data/`:
+The configurations in `examples/` run against the data in `data/`:
 
-| config | forcing |
+| Configuration | Forcing |
 |---|---|
-| `atwater_wy22_insitu.yaml` | Atwater Study Plot station, WY2022, IPW |
-| `atwater_wy24_insitu.yaml` | same, WY2024, using the corrected precip file (`_v2`: the original's precipitation is 24 h late) |
-| `atwater_wy22_hrrr.yaml` | HRRR extracted at the plot, WY2022, CSV, with four phase/density schemes |
-
-## Things that will bite you
-
-- **A mid-winter start from bare ground is silently wrong.** Set
-  `initial_snow.depth_m` whenever the record does not start before the first
-  snow.
-- **Depth cannot separate precipitation from new snow density.** Tuning
-  `precip_scale` against depth assumes the density scheme is right.
-- **The wind sensor is a ceiling.** snobal measures wind height above the
-  snow surface; the summary reports peak depth over `z_u`.
-- **No albedo model.** `S_n` is net solar, so it already contains the albedo
-  of the pack that existed. Changing snowfall does not change brightness.
-- **Neutral-stability substitutions.** When the turbulent-transfer iteration
-  fails to converge, neutral fluxes are used for that step and counted.
+| `atwater_wy25_insitu.yaml` | Atwater Study Plot station, WY2025, IPW |
+| `atwater_wy24_insitu.yaml` | Atwater Study Plot station, WY2024, IPW (corrected precipitation file `_v2`) |
+| `atwater_wy22_insitu.yaml` | Atwater Study Plot station, WY2022, IPW, start time checked against HRRR |
+| `atwater_wy22_hrrr.yaml` | HRRR extracted at the plot, WY2022, CSV, with four phase and density schemes |
 
 ## Provenance and license
 
-Code: MIT (`LICENSE`). The physics core is PySnobal 0.2.3 (CC0, US
-government work); see `PROVENANCE.md`.
-Data in `data/`: CC-BY-4.0 (`data/LICENSE`). A Zenodo DOI will be added when
-the forcings are archived.
+Code is released under the MIT License (`LICENSE`). The physics core is
+PySnobal 0.2.3 (CC0, a work of the US government); see `PROVENANCE.md`.
+Data in `data/` are released under CC-BY-4.0 (`data/LICENSE`). A Zenodo DOI
+will be added when the forcings are archived.
 
-Sites: Atwater Study Plot (UT) now; Senator Beck and Swamp Angel Study Plots
-(CO) to follow.
+Sites: Atwater Study Plot (UT). Senator Beck and Swamp Angel Study Plots (CO)
+will follow.
+
+## Reference
+
+Marks, D., Domingo, J., Susong, D., Link, T., and Garen, D. (1999). A
+spatially distributed energy balance snowmelt model for application in
+mountain basins. Hydrological Processes, 13, 1935–1959.
