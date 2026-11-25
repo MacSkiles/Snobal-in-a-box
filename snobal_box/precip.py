@@ -19,7 +19,7 @@ config::
       threshold_shift: 0.0       # C; positive moves the boundary warmer = MORE snow
 
 ``file`` means "use the values already in the forcing" and is only possible
-when the forcing carries them (IPW precip files and the HRRR extractions do).
+when the forcing carries them (snobal .input precip files and the HRRR extractions do).
 ``auto`` (the default) is ``file`` when the forcing has the column and
 ``table`` when it does not.
 

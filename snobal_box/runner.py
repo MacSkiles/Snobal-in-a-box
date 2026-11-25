@@ -19,8 +19,8 @@ import pandas as pd
 from snobal_box import __version__
 from snobal_box._pysnobal.core.constants import FREEZE
 from snobal_box.config import load_config, dump_config
-from snobal_box.forcing import (read_ipw_forcing, read_csv_forcing,
-                                read_ipw_heights, read_ipw_snow, MET_COLS)
+from snobal_box.forcing import (read_input_forcing, read_csv_forcing,
+                                read_input_heights, read_input_snow, MET_COLS)
 from snobal_box.precip import apply_precip_scheme, resolve_auto
 from snobal_box.align import find_start
 from snobal_box.metrics import (season_metrics, compare, mass_balance,
@@ -73,7 +73,7 @@ def screen(forcing, ranges=None, verbose=True):
     return out, flagged
 
 
-def _start_for_ipw(cfg, verbose):
+def _start_for_input(cfg, verbose):
     f = cfg['forcing']
     tz = f['timezone']
     info = {}
@@ -126,9 +126,9 @@ def load_forcing(cfg, verbose=True):
     info = {}
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter('always')
-        if f['format'] == 'ipw':
-            start, info = _start_for_ipw(cfg, verbose)
-            forcing = read_ipw_forcing(f['data_file'], f['precip_file'],
+        if f['format'] == 'input':
+            start, info = _start_for_input(cfg, verbose)
+            forcing = read_input_forcing(f['data_file'], f['precip_file'],
                                        start, temps_in_C=f['temps_in_C'])
         else:
             forcing = read_csv_forcing(
@@ -164,14 +164,14 @@ def site_state(cfg):
     """Measurement heights and initial snow from the config."""
     s = cfg['site']
     heights = dict(s['heights']) if s['heights'] \
-        else read_ipw_heights(s['height_file'])
+        else read_input_heights(s['height_file'])
     for k in ('z_u', 'z_t', 'z_0', 'z_g'):
         if k not in heights:
             raise ValueError(f'site.heights is missing {k}')
     init = {'depth_m': 0.0, 'density': 300.0, 'temp_C': -4.0,
             'h2o_sat': 0.0}
     if s['snow_file']:
-        init.update(read_ipw_snow(s['snow_file']))
+        init.update(read_input_snow(s['snow_file']))
     if s['initial_snow']:
         init.update(s['initial_snow'])
     t = init['temp_C'] + FREEZE

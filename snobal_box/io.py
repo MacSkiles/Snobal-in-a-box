@@ -1,4 +1,4 @@
-"""Readers for classic IPW-style ASCII snobal files."""
+"""Readers for snobal ASCII .input and .model files."""
 
 import os
 import warnings
@@ -14,7 +14,7 @@ __all__ = ['read_forcing', 'read_initial_snow', 'read_measurement_heights',
 DATA_COLS = ['S_n', 'I_lw', 'T_a', 'e_a', 'u', 'T_g']
 PRECIP_COLS = ['time', 'm_pp', 'percent_snow', 'rho_snow', 'T_pp']
 
-# 26-column merged IPW snobal output (energy/mass + snow properties)
+# 26-column merged snobal output (energy/mass + snow properties)
 OUT_COLS = [
     'time', 'R_n', 'H', 'L_v_E', 'G', 'M', 'delta_Q', 'G_0', 'delta_Q_0',
     'cc_s_0', 'cc_s_l', 'cc_s', 'E_s', 'melt', 'ro_predict',

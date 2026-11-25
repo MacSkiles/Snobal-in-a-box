@@ -2,7 +2,7 @@
 
 Two formats:
 
-* ``ipw``: the classic snobal ``.input`` pair (data file + precip file). These
+* ``input``: the snobal ``.input`` pair (data file + precip file). These
   carry an hourly counter, not timestamps, so the start time comes from the
   config, or is found by matching air temperature against a timestamped
   reference (see :mod:`snobal_box.align`).
@@ -26,7 +26,7 @@ import pandas as pd
 
 from snobal_box._pysnobal.core.constants import FREEZE
 
-__all__ = ['read_ipw_forcing', 'read_csv_forcing', 'COLUMN_PRESETS',
+__all__ = ['read_input_forcing', 'read_csv_forcing', 'COLUMN_PRESETS',
            'MET_COLS', 'PHASE_COLS', 'FORCING_COLS', 'TEMP_COLS']
 
 MET_COLS = ['S_n', 'I_lw', 'T_a', 'e_a', 'u', 'T_g']
@@ -54,7 +54,7 @@ COLUMN_PRESETS = {
 }
 
 
-# --------------------------------------------------------------------- IPW
+# ------------------------------------------------------------ .input files
 
 def _read_fixed_fields(path, names, fill_missing=None):
     """Read whitespace-separated records that should have len(names) fields.
@@ -93,16 +93,15 @@ def _read_fixed_fields(path, names, fill_missing=None):
             for c in cols:
                 if c in fill_missing:
                     df[c] = df[c].fillna(fill_missing[c])
-            msg += (f'; filled with {fill_missing}. Empty leading rows can '
-                    'mean the column is shifted in time (Atwater WY2024 '
-                    'precipitation is 24 h late), so check the file')
+            msg += (f'; filled with {fill_missing}. Empty rows can mean '
+                    'the column is shifted in time, so check the file')
         warnings.warn(msg)
     return df
 
 
-def read_ipw_forcing(data_file, precip_file, start, temps_in_C=True,
+def read_input_forcing(data_file, precip_file, start, temps_in_C=True,
                      tstep_minutes=60):
-    """Read an IPW .input pair. ``start`` must be a tz-aware Timestamp."""
+    """Read a snobal .input pair. ``start`` must be a tz-aware Timestamp."""
     data = _read_fixed_fields(data_file, MET_COLS)
     precip = _read_fixed_fields(
         precip_file, ['time', 'm_pp', 'percent_snow', 'rho_snow', 'T_pp'],
@@ -119,13 +118,13 @@ def read_ipw_forcing(data_file, precip_file, start, temps_in_C=True,
     return df
 
 
-def read_ipw_heights(path):
+def read_input_heights(path):
     """time z_u z_t z_0 z_g"""
     rec = _read_fixed_fields(path, ['t', 'z_u', 'z_t', 'z_0', 'z_g']).iloc[0]
     return {k: float(rec[k]) for k in ('z_u', 'z_t', 'z_0', 'z_g')}
 
 
-def read_ipw_snow(path):
+def read_input_snow(path):
     """time z_s rho T_s_0 T_s h2o_sat. Temperatures returned in C."""
     rec = _read_fixed_fields(
         path, ['t', 'z_s', 'rho', 'T_s_0', 'T_s', 'h2o_sat']).iloc[0]

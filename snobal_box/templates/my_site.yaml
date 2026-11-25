@@ -10,9 +10,8 @@ site:
   # Instrument heights above the ground, m. z_u wind, z_t air temperature,
   # z_0 snow surface roughness, z_g depth of the soil temperature.
   heights: {z_u: 5.0, z_t: 5.0, z_0: 0.003, z_g: 0.15}
-  # Snow on the ground when the record starts. Leave at 0 only if the record
-  # starts before the first snowfall: a mid-winter start from bare ground runs
-  # fine and is badly wrong.
+  # Snow on the ground at the start of the record. Use 0 only when the
+  # record begins before the first snowfall.
   initial_snow: {depth_m: 0.0, density: 300, temp_C: -4.0}
 
 forcing:

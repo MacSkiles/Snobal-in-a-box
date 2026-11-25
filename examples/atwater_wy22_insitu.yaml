@@ -1,8 +1,7 @@
 # Atwater Study Plot, UT. Water year 2022, in situ station forcing.
 #
-# The .input files have no timestamps. `water_year: 2022` asserts the first
-# record is 2021-10-01 00:00 in `timezone`; `align_with` checks that claim
-# against HRRR air temperature and warns if they disagree by 2 h or more.
+# The .input files have no timestamps. `water_year: 2022` sets the first
+# record to 2021-10-01 00:00 in `timezone`.
 name: Atwater WY2022 in situ
 
 site:
@@ -11,15 +10,11 @@ site:
   snow_file: ../data/atwater/Atwater_WY22_snow.properties.input
 
 forcing:
-  format: ipw
+  format: input
   data_file: ../data/atwater/Atwater_WY22_snobal_Data.input
   precip_file: ../data/atwater/Atwater_WY22_snobal_PrecipFile.input
   water_year: 2022
   timezone: Etc/GMT+7          # MST all year (no daylight saving)
-  align_with:
-    file: ../data/atwater_hrrr/jordan_bilinear_forcing_40.5915_-111.6378_nearest_wy2022.csv
-    columns: hrrr_extract
-    timezone: UTC
 
 precip:
   # 'file' would use the split already in the precip file, but a file

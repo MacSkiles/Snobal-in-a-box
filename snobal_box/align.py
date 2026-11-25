@@ -1,6 +1,6 @@
 """Find or check the start time of an untimestamped forcing record.
 
-IPW ``.input`` files carry an hourly counter, not times, so their start time
+snobal ``.input`` files carry an hourly counter, not times, so their start time
 is an assertion. If a timestamped record of the same place exists (an HRRR
 extraction, a nearby station), the diurnal cycle of air temperature pins the
 start to the hour: slide one series along the other and keep the lag with the

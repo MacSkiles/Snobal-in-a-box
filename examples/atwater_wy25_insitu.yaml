@@ -1,9 +1,7 @@
 # Atwater Study Plot, UT. Water year 2025, in situ station forcing.
 #
 # The .input files have no timestamps. `water_year: 2025` sets the first
-# record to 2024-10-01 00:00 in `timezone`. (HRRR extractions currently end
-# with WY2024, so this start is not cross-checked; see the WY2022 example for
-# `align_with`.)
+# record to 2024-10-01 00:00 in `timezone`.
 name: Atwater WY2025 in situ
 
 site:
@@ -12,7 +10,7 @@ site:
   snow_file: ../data/atwater/Atwater_WY25_snow.properties.input
 
 forcing:
-  format: ipw
+  format: input
   data_file: ../data/atwater/Atwater_WY25_snobal_Data.input
   precip_file: ../data/atwater/Atwater_WY25_snobal_PrecipFile.input
   water_year: 2025

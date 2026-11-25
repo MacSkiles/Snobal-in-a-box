@@ -22,13 +22,13 @@ DEFAULTS = {
         'elevation_m': None,
         'elevation_ft': None,
         'heights': None,           # {z_u, z_t, z_0, z_g} in m
-        'height_file': None,       # or an IPW inheight file
+        'height_file': None,       # or a snobal inheight .input file
         'initial_snow': None,      # {depth_m, density, temp_C}
-        'snow_file': None,         # or an IPW snow.properties file
+        'snow_file': None,         # or a snobal snow.properties .input file
     },
     'forcing': {
-        'format': None,            # ipw | csv
-        # ipw
+        'format': None,            # input | csv
+        # input (snobal .input files)
         'data_file': None,
         'precip_file': None,
         'start': None,             # 'YYYY-MM-DD HH:MM' | 'auto'
@@ -114,27 +114,29 @@ def resolve_config(raw, base_dir):
         errors.append('site.heights {z_u, z_t, z_0, z_g} or '
                       'site.height_file is required')
 
-    fmt = f['format'] or ('ipw' if f['data_file'] else
+    fmt = f['format'] or ('input' if f['data_file'] else
                           'csv' if f['file'] else None)
+    if fmt == 'ipw':               # older name for the same format
+        fmt = 'input'
     f['format'] = fmt
-    if fmt == 'ipw':
+    if fmt == 'input':
         if not (f['data_file'] and f['precip_file']):
             errors.append('forcing.data_file and forcing.precip_file are '
-                          'required for format ipw')
+                          'required for format input')
         if f['start'] is None and f['water_year'] is not None:
             f['start'] = f'{int(f["water_year"]) - 1}-10-01 00:00'
         if f['start'] is None:
             errors.append(
-                'forcing.start is required for format ipw: the .input files '
-                "have no timestamps. Give a time, a water_year, or 'auto' "
-                'with forcing.align_with')
+                'forcing.start is required for format input: the .input '
+                'files have no timestamps. Give a start time or a '
+                'water_year')
         if f['start'] == 'auto' and not f['align_with']:
             errors.append("forcing.start 'auto' needs forcing.align_with")
     elif fmt == 'csv':
         if not f['file']:
             errors.append('forcing.file is required for format csv')
     else:
-        errors.append("forcing.format must be 'ipw' or 'csv'")
+        errors.append("forcing.format must be 'input' or 'csv'")
 
     for label, sc in cfg['scenarios'].items():
         if not isinstance(sc, dict):

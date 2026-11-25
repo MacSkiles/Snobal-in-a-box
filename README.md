@@ -33,7 +33,7 @@ and covers both the bundled example and user-uploaded forcing.
 | Format | Description | Start time |
 |---|---|---|
 | `csv` | A single file with a time column. Column names are mapped by a preset (`snobal`, `hrrr_extract`) or a `columns:` mapping. | Taken from the timestamps |
-| `ipw` | The snobal `.input` file pair (data and precipitation files). | Set in the configuration: `start`, `water_year`, or `start: auto` with `align_with` |
+| `input` | The snobal `.input` file pair (data and precipitation files). | Set in the configuration: `start` or `water_year` |
 
 Required variables are net solar radiation `S_n`, incoming longwave
 radiation `I_lw`, air temperature `T_a`, vapor pressure `e_a`, wind speed `u`,
@@ -43,21 +43,17 @@ derived by the selected precipitation scheme.
 
 **Site** parameters are elevation, measurement heights (`z_u`, `z_t`, `z_0`,
 `z_g`) and initial snow conditions. They are given in the configuration, or
-read from IPW `inheight` and `snow.properties` files.
+read from snobal `inheight` and `snow.properties` `.input` files.
 
 ## Start time
 
-IPW `.input` files contain an hourly counter rather than timestamps, so the
+snobal `.input` files contain an hourly counter rather than timestamps, so the
 start time must be specified:
 
 - `water_year: 2025` sets the first record to 2024-10-01 00:00 in `timezone`.
-- `align_with: <timestamped CSV>` cross-correlates the diurnal air temperature
-  anomalies of the record against a reference series and reports the
-  best-matching start hour and its correlation. With an explicit start, a
-  warning is issued if the two differ by 2 h or more; with `start: auto`, the
-  aligned start is used.
-- Each run writes `config_resolved.yaml`, recording the start time used and
-  the alignment result.
+- `start: '2024-10-01 00:00'` sets it explicitly.
+
+Each run writes `config_resolved.yaml`, recording the start time used.
 
 All times are timezone-aware. `timezone` is the zone of the input times and
 `output_timezone` the zone of the output (for example, HRRR forcing in UTC
@@ -124,9 +120,9 @@ The configurations in `examples/` run against the data in `data/`:
 
 | Configuration | Forcing |
 |---|---|
-| `atwater_wy25_insitu.yaml` | Atwater Study Plot station, WY2025, IPW |
-| `atwater_wy24_insitu.yaml` | Atwater Study Plot station, WY2024, IPW (corrected precipitation file `_v2`) |
-| `atwater_wy22_insitu.yaml` | Atwater Study Plot station, WY2022, IPW, start time checked against HRRR |
+| `atwater_wy25_insitu.yaml` | Atwater Study Plot station, WY2025, `.input` files |
+| `atwater_wy24_insitu.yaml` | Atwater Study Plot station, WY2024, `.input` files |
+| `atwater_wy22_insitu.yaml` | Atwater Study Plot station, WY2022, `.input` files |
 | `atwater_wy22_hrrr.yaml` | HRRR extracted at the plot, WY2022, CSV, with four phase and density schemes |
 
 ## Provenance and license

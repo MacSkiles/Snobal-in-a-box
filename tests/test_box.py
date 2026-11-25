@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 import snobal_box as sb
-from snobal_box.forcing import read_ipw_forcing, read_csv_forcing
+from snobal_box.forcing import read_input_forcing, read_csv_forcing
 from snobal_box.precip import apply_precip_scheme, PHASE_SCHEMES
 from snobal_box.runner import scenario_forcing
 
@@ -22,23 +22,23 @@ def _write(tmp_path, name, text):
     return str(p)
 
 
-def test_ipw_empty_field_is_repaired_not_shifted(tmp_path):
+def test_input_empty_field_is_repaired_not_shifted(tmp_path):
     data = _write(tmp_path, 'd.input', '0.1 288 7.5 513 0.5 -2.5\n' * 3)
     precip = _write(tmp_path, 'p.input',
                     '0  0.0 0.0 5.24\n1 1.0 1.0 100.0 -3.0\n2 0.0 0.0 0.0 4\n')
     start = pd.Timestamp('2023-10-01', tz='Etc/GMT+7')
     with pytest.warns(UserWarning, match='empty field'):
-        f = read_ipw_forcing(data, precip, start)
+        f = read_input_forcing(data, precip, start)
     assert f['m_pp'].tolist() == [0.0, 1.0, 0.0]
     assert f['rho_snow'].tolist() == [0.0, 100.0, 0.0]   # not a temperature
     assert f.index[0] == start
 
 
-def test_ipw_bad_row_is_an_error(tmp_path):
+def test_input_bad_row_is_an_error(tmp_path):
     data = _write(tmp_path, 'd.input', '0.1 288 7.5 513\n')
     precip = _write(tmp_path, 'p.input', '0 0 0 0 0\n')
     with pytest.raises(ValueError, match='line 1'):
-        read_ipw_forcing(data, precip, pd.Timestamp('2023-10-01', tz='UTC'))
+        read_input_forcing(data, precip, pd.Timestamp('2023-10-01', tz='UTC'))
 
 
 def test_csv_template_reads_and_gaps(tmp_path):
@@ -111,7 +111,7 @@ def test_find_start_recovers_known_offset():
 
 def test_config_errors_are_listed():
     with pytest.raises(ValueError) as e:
-        sb.load_config({'forcing': {'format': 'ipw', 'data_file': 'a',
+        sb.load_config({'forcing': {'format': 'input', 'data_file': 'a',
                                     'precip_file': 'b'}})
     msg = str(e.value)
     for needle in ('name', 'elevation', 'heights', 'forcing.start'):
