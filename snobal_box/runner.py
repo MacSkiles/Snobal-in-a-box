@@ -1,11 +1,11 @@
 """Config-driven runs: load forcing, build scenarios, run, summarize, save.
 
     import snobal_box as sb
-    result = sb.run_config('examples/atwater_wy22_insitu.yaml')
+    result = sb.run_config('examples/atwater_wy25_insitu.yaml')
     result.summary            # one row per scenario
     result.outputs['baseline']
 
-or from a shell: ``snobal-box run examples/atwater_wy22_insitu.yaml``
+or from a shell: ``snobal-box run examples/atwater_wy25_insitu.yaml``
 """
 
 import math

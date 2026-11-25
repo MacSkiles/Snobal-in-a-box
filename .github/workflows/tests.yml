@@ -13,4 +13,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install .[test]
       - run: pytest -q tests
-      - run: snobal-box check examples/atwater_wy22_hrrr.yaml
+      - run: snobal-box check examples/atwater_wy24_hrrr.yaml

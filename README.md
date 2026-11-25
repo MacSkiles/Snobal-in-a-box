@@ -122,8 +122,10 @@ The configurations in `examples/` run against the data in `data/`:
 |---|---|
 | `atwater_wy25_insitu.yaml` | Atwater Study Plot station, WY2025, `.input` files |
 | `atwater_wy24_insitu.yaml` | Atwater Study Plot station, WY2024, `.input` files |
-| `atwater_wy22_insitu.yaml` | Atwater Study Plot station, WY2022, `.input` files |
-| `atwater_wy22_hrrr.yaml` | HRRR extracted at the plot, WY2022, CSV, with four phase and density schemes |
+| `atwater_wy24_hrrr.yaml` | HRRR extracted at the plot, WY2024, CSV, with four phase and density schemes |
+
+WY2024 has both station and HRRR forcing, so the two WY2024 examples can be
+compared directly.
 
 ## Provenance and license
 

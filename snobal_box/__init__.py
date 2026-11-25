@@ -8,10 +8,10 @@ PROVENANCE.md.
 Quickstart (config driven, the recommended way):
 
     import snobal_box as sb
-    result = sb.run_config('examples/atwater_wy22_insitu.yaml')
+    result = sb.run_config('examples/atwater_wy25_insitu.yaml')
     result.summary
 
-or ``snobal-box run examples/atwater_wy22_insitu.yaml`` from a shell.
+or ``snobal-box run examples/atwater_wy25_insitu.yaml`` from a shell.
 The older ``Site`` class still works for scripted use.
 """
 

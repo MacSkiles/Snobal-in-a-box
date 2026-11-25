@@ -1,7 +1,7 @@
-# Atwater Study Plot, UT. Water year 2022, HRRR forcing extracted at the plot.
+# Atwater Study Plot, UT. Water year 2024, HRRR forcing extracted at the plot.
 # Timestamped CSV, so no start time to assert. Times in the file are UTC;
 # output is reported in local standard time.
-name: Atwater WY2022 HRRR
+name: Atwater WY2024 HRRR
 
 site:
   elevation_ft: 8765
@@ -10,11 +10,11 @@ site:
 
 forcing:
   format: csv
-  file: ../data/atwater_hrrr/jordan_bilinear_forcing_40.5915_-111.6378_nearest_wy2022.csv
+  file: ../data/atwater_hrrr/jordan_bilinear_forcing_40.5915_-111.6378_nearest_wy2024.csv
   columns: hrrr_extract
   timezone: UTC                       # times in the file
   output_timezone: Etc/GMT+7          # report in MST, like the in situ run
-  window: {start: '2021-10-01 00:00', end: '2022-06-30 23:00'}   # in output_timezone; matches in situ
+  window: {start: '2023-10-01 00:00', end: '2024-06-30 23:00'}   # in output_timezone; matches in situ
 
 precip:
   phase: file
